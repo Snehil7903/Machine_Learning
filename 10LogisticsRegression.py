@@ -1,0 +1,11 @@
+import numpy as np
+val1 = 1 / (1 + np.exp(-5))
+val2 = 1 / (1 + np.exp(-1))
+val3 = 1 / (1 + np.exp(0))
+val4 = 1 / (1 + np.exp(1))
+val5 = 1 / (1 + np.exp(5))
+print(val1)
+print(val2)
+print(val3)
+print(val4)
+print(val5)
