@@ -1,0 +1,144 @@
+import torch
+x = torch.tensor([1, 2, 3])
+print(x)
+
+You can think of a tensor as a NumPy array that has additional capabilities needed for deep learning.
+
+A tensor can have different dimensions.
+x = torch.tensor(5)
+x = torch.tensor([1, 2, 3])
+x = torch.tensor([
+    [1, 2, 3],
+    [4, 5, 6]
+])
+x = torch.tensor([
+    [
+        [1, 2],
+        [3, 4]
+    ],
+    [
+        [5, 6],
+        [7, 8]
+    ]
+])
+
+tensors can do things that are crucial for neural networks.
+CPU
+x = torch.tensor([1, 2, 3])
+GPU
+x = x.to("cuda")
+assuming CUDA is available.
+This allows enormous matrix operations to run on GPUs.
+More importantly, PyTorch tensors can participate in automatic differentiation.
+That's where things become really interesting.
+
+
+Tensor properties
+
+Let's create one:
+
+x = torch.tensor([
+    [1, 2, 3],
+    [4, 5, 6]
+])
+
+You can inspect it:
+
+print(x.shape)
+print(x.ndim)
+print(x.dtype)
+print(x.device)
+
+You'll get something approximately like:
+
+torch.Size([2, 3])
+2
+torch.int64
+cpu
+
+| Property | Meaning              |
+| -------- | -------------------- |
+| `shape`  | dimensions           |
+| `ndim`   | number of dimensions |
+| `dtype`  | data type            |
+| `device` | CPU/GPU              |
+
+
+Tensor data types
+Deep learning usually uses floating-point numbers.
+So instead of:
+x = torch.tensor([1, 2, 3])
+we'll frequently use:
+x = torch.tensor([1, 2, 3], dtype=torch.float32)
+Or:
+x = torch.tensor([1., 2., 3.])
+Why?
+Because neural networks perform operations such as:
+Wx+b
+and gradient-based optimization requires continuous numerical values.
+
+
+Creating tensors
+You'll use these constantly.
+torch.zeros
+x = torch.zeros(2, 3)
+[[0, 0, 0],
+ [0, 0, 0]]
+torch.ones
+x = torch.ones(2, 3)
+Random tensor
+x = torch.rand(2, 3)
+Random values between 0 and 1.
+Normal distribution
+x = torch.randn(2, 3)
+Random values approximately following:
+N(0,1)
+Range
+x = torch.arange(0, 10)
+gives:
+0 1 2 3 4 5 6 7 8 9
+
+
+
+
+NumPy ↔ PyTorch
+Since you already know NumPy, this is useful.
+NumPy:
+import numpy as np
+x = np.array([1, 2, 3])
+PyTorch:
+import torch
+x = torch.tensor([1, 2, 3])
+Convert PyTorch → NumPy:
+x.numpy()
+Convert NumPy → PyTorch:
+torch.from_numpy(x)
+
+
+
+matrix multiplication
+X = torch.tensor([
+    [1., 2.],
+    [3., 4.]
+])
+
+W = torch.tensor([
+    [5., 6.],
+    [7., 8.]
+])
+
+result = X @ W
+
+print(result)
+
+The @ operator means matrix multiplication.
+You can also use:
+torch.matmul(X, W)
+
+
+import torch
+x = torch.tensor([2.0])
+w = torch.tensor([3.0])
+b = torch.tensor([1.0])
+y = x * w + b
+print(y)
