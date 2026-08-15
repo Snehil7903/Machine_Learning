@@ -1,0 +1,49 @@
+1. First: why do we need gradients?
+Suppose we have a very simple model:
+y=wx+b
+Let's say:
+x=2,w=3,b=1
+Then:
+y=3(2)+1=7
+Now suppose the correct answer is:
+y true=10
+Our model predicted:
+y=7
+So our model needs to change its parameters w and b.
+But which direction should we change them?
+That's where derivatives come in.
+
+
+2. Derivative gives us the direction
+Suppose our loss is
+L=(y−y)^2
+For our example:
+L=(7−10)^2=9
+We want to reduce this loss.
+We therefore need:
+∂w/∂L
+and
+∂b/∂L
+These gradients tell us how sensitive the loss is to each parameter.
+Then the optimizer can do:
+w new=w−η(∂w/∂L)
+	​
+Imagine doing this for a neural network containing millions of parameters.
+Doing all these derivatives manually would be absurd.
+That's what Autograd solves.
+
+
+4. What is Autograd?
+PyTorch's autograd system automatically calculates derivatives.
+We tell PyTorch:
+"I want the gradient of this tensor."
+requires_grad=True
+
+import torch
+w = torch.tensor(3.0, requires_grad=True)
+print(w)
+
+You'll see something like:
+tensor(3., requires_grad=True)
+Now PyTorch knows:
+I need to track operations involving w because eventually I may need its derivative.
