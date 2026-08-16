@@ -47,3 +47,254 @@ You'll see something like:
 tensor(3., requires_grad=True)
 Now PyTorch knows:
 I need to track operations involving w because eventually I may need its derivative.
+
+
+
+Example:-
+
+import torch
+x = torch.tensor(2.0)
+w = torch.tensor(3.0, requires_grad=True)
+b = torch.tensor(1.0, requires_grad=True)
+y = w * x + b
+print(y)
+
+Output:
+tensor(7., grad_fn=<AddBackward0>)
+Notice something interesting:
+grad_fn=<AddBackward0>
+This means PyTorch is tracking how y was created.
+
+
+6. Create the loss
+Let's use:
+
+y_true = torch.tensor(10.0)
+loss = (y - y_true) ** 2
+print(loss)
+We get:
+tensor(9., grad_fn=<PowBackward0>)
+PyTorch has now tracked the entire computation.
+Conceptually:
+
+w ─────┐
+       │
+       × ────┐
+       │     │
+x ─────┘     +
+             │
+b ───────────┘
+             │
+             y
+             │
+             -
+             │
+          y_true
+             │
+             ^
+             2
+             │
+           loss
+
+7. The magic line: backward()
+Now:
+loss.backward()
+That's it.
+PyTorch calculates the gradients.
+
+Now:
+print(w.grad)
+print(b.grad)
+
+You'll get:
+tensor(-12.)
+tensor(-6.)
+
+Exactly what we calculated manually.
+🔥 This is Autograd.
+
+8. What actually happened?
+When you wrote:
+loss.backward()
+PyTorch effectively calculated:
+∂w/∂L and ∂b/∂L
+and stored them in:
+w.grad & b.grad
+
+parameter
+   ↓
+requires_grad=True
+   ↓
+PyTorch tracks operations
+   ↓
+loss.backward()
+   ↓
+gradients calculated
+   ↓
+parameter.grad
+
+
+9. Very important distinction
+This: w is the parameter itself.
+This: w.grad is the gradient of the loss with respect to that parameter.
+
+old w = 3
+     ↓
+gradient = -12
+     ↓
+new w = 4.2
+
+And that makes sense.
+Our prediction was only 7 while we wanted 10.
+Increasing w increases:
+y=wx+b
+so increasing w should indeed help.
+
+
+For example:
+w = torch.tensor(3.0, requires_grad=True)
+means:
+Track operations involving w so that gradients can eventually be calculated.
+Usually, model parameters automatically have this enabled.
+For example, when you create:
+
+layer = torch.nn.Linear(10, 5)
+
+PyTorch creates weights and biases that require gradients.
+You can see them:
+
+for parameter in layer.parameters():
+    print(parameter.requires_grad)
+
+You'll normally get:
+True
+True
+
+
+Input X
+   │
+   │ doesn't need gradient
+   ↓
+Model parameters W, b
+   │
+   │ requires gradients
+   ↓
+Prediction
+   ↓
+Loss
+   ↓
+backward()
+   ↓
+∂L/∂W , ∂L/∂b
+
+Experiment:-
+import torch
+x = torch.tensor(2.0)
+w = torch.tensor(3.0, requires_grad=True)
+y = w * x
+print(y)
+print(y.grad_fn)
+Now:
+y.backward()
+Then:
+print(w.grad)
+
+
+
+14. Another important concept: gradients accumulate
+This catches almost everyone the first time.
+Consider:
+import torch
+w = torch.tensor(3.0, requires_grad=True)
+y = w * 2
+y.backward()
+print(w.grad)
+
+Output:
+tensor(2.)
+
+Now do another backward operation:
+z = w * 3
+z.backward()
+print(w.grad)
+
+but you'll get:
+tensor(5.)
+
+Why?
+Because PyTorch accumulates gradients.
+First:
+∂w/∂y=2
+Then:
+∂w/∂z=3
+PyTorch accumulates:
+2+3=5
+This is why training loops contain:
+optimizer.zero_grad()
+
+
+
+15. Clearing gradients manually
+You can do:
+w.grad.zero_()
+Then:
+print(w.grad)
+It becomes:
+tensor(0.)
+In actual neural-network training, we generally don't manually zero every parameter. Instead:
+optimizer.zero_grad()
+does it for all parameters.
+
+
+16. The three lines you MUST understand
+Eventually you'll see this everywhere:
+optimizer.zero_grad()
+loss = loss_fn(predictions, y)
+loss.backward()
+optimizer.step()
+
+For now, focus on these two:
+loss.backward()
+Calculate gradients.
+optimizer.step()
+Update parameters using those gradients.
+
+loss.backward()
+      ↓
+calculate ∂L/∂W
+      ↓
+optimizer.step()
+      ↓
+update W
+
+
+
+Autograd in one picture:-
+
+                Forward Pass
+                     ↓
+X ───→ W ───→ Prediction ───→ Loss
+      ↑                         │
+      │                         │
+      │     backward()          │
+      │                         ↓
+      └──── Gradient ←──────────┘
+              │
+              ↓
+         optimizer.step()
+              │
+              ↓
+          Updated W
+
+
+example:-
+
+import torch
+x = torch.tensor(3.0)
+w = torch.tensor(2.0, requires_grad=True)
+b = torch.tensor(4.0, requires_grad=True)
+y = w * x + b
+loss = (y - 20) ** 2
+loss.backward()
+print(w.grad)
+print(b.grad)
