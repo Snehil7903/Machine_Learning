@@ -1,0 +1,221 @@
+This is the concept that makes autograd understandable.
+Suppose we have:
+y=wx+b
+Instead of viewing this as one big equation, break it into operations:
+
+w ─────┐
+       │
+       × ─────→ wx ────┐
+       │               │
+x ─────┘               +
+                       │
+b ────────────────────┘
+                       │
+                       ↓
+                       y
+
+This is a computational graph.
+Each operation becomes a node.
+
+3. Why does PyTorch need this graph?
+Because when we call:
+loss.backward()
+PyTorch travels through this graph backwards and applies the chain rule.
+That's literally what backpropagation is.
+Forward:
+inputs → operations → prediction → loss
+Backward:
+loss → gradients → parameters
+
+
+What backward() actually does
+When you execute:
+loss.backward()
+PyTorch essentially performs:
+                    LOSS
+                     │
+                     ↓
+              ∂L / ∂ prediction
+                     │
+                     ↓
+              ∂L / ∂ intermediate
+                     │
+              ┌──────┴──────┐
+              ↓             ↓
+          ∂L / ∂w       ∂L / ∂b
+
+It applies the chain rule automatically.
+This is why the combination is so powerful:
+loss.backward()
+means:
+"Start from this loss and calculate how every tracked parameter contributed to it."
+
+
+grad_fn
+Remember earlier we saw:
+print(loss)
+and got something like:
+tensor(100., grad_fn=<PowBackward0>)
+That grad_fn is related to the operation that created the tensor.
+For example:
+y = w * x
+may produce something associated with multiplication.
+Then:
+loss = (y - 20) ** 2
+produces another operation.
+PyTorch essentially remembers enough information about these operations to perform the backward pass.
+
+7. Forward pass vs backward pass
+This distinction is extremely important.
+Forward pass
+We calculate the prediction and loss:
+X→Z→A→y^→L
+prediction = model(X)
+loss = loss_fn(prediction, y)
+
+Backward pass
+We calculate gradients:
+L→∂W/∂L→∂b/∂L
+using:
+loss.backward()
+             FORWARD
+                ↓
+X → Network → Prediction → Loss
+                           │
+                           ↓
+             BACKWARD ← Gradients
+
+
+8. A very important misconception
+backward() does NOT update the weights.
+This:
+loss.backward()
+only calculates gradients.
+For example:
+w = 2
+w.grad = -60
+The weight is still:
+w=2
+It hasn't changed.
+The update happens later:
+optimizer.step()
+
+So:
+loss.backward()
+      ↓
+calculate gradients
+      ↓
+optimizer.step()
+      ↓
+change weights
+
+Keep this distinction permanently in your head.
+
+
+9. Backpropagation
+Now we can formally define it.
+Backpropagation is the process of computing gradients of the loss with respect to the model's parameters by propagating error gradients backward through the computational graph using the chain rule.
+That's a mouthful.
+Think:
+Forward:
+Input → Prediction → Loss
+Backward:
+Loss → Gradient → Gradient → Gradient → Parameters
+
+
+10. Tiny neural network example
+       x
+       │
+       ↓
+   w₁x + b
+       │
+       ↓
+     ReLU
+       │
+       ↓
+      w₂
+       │
+       ↓
+    prediction
+       │
+       ↓
+      Loss
+
+During backpropagation:
+
+Loss
+ ↓
+prediction
+ ↓
+w₂
+ ↓
+ReLU
+ ↓
+w₁ and b
+
+Every parameter receives a gradient.
+That's how a neural network learns.
+
+11. Why ReLU matters during backpropagation
+ReLU is:
+f(x)=max(0,x)
+Its derivative is approximately:
+f′(x)={1, x>0
+       0, x<0
+So if a neuron produced:
+z=−5
+then:
+ReLU(−5)=0
+and its derivative is:0
+Therefore the gradient flowing through that path becomes zero.
+This is an early glimpse into why activation functions affect learning.
+We'll explore this properly when we build neural networks.
+
+
+The full learning mechanism
+                 ┌──────────────┐
+                 │   Input X    │
+                 └──────┬───────┘
+                        ↓
+                 ┌──────────────┐
+                 │ Neural Net   │
+                 │   W, b       │
+                 └──────┬───────┘
+                        ↓
+                   Prediction
+                        ↓
+                   Loss Function
+                        ↓
+                     LOSS
+                        │
+                        │ backward()
+                        ↓
+                   Gradients
+                        │
+                        ↓
+                    Optimizer
+                        │
+                        │ step()
+                        ↓
+                  Updated W, b
+                        │
+                        └──────→ repeat
+
+
+
+13. One more thing: torch.no_grad()
+Sometimes we don't want PyTorch to calculate gradients.
+For example, during inference:
+
+with torch.no_grad():
+    prediction = model(X)
+
+Why?
+Because we're not training.
+We don't need:
+computational graph
+gradients
+backpropagation
+This saves memory and computation.
+We'll see this again in the validation loop.
+
