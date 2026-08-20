@@ -1,0 +1,307 @@
+Optimizers
+Now we reach the part where the neural network actually learns.
+So far we have:
+Prediction
+    ↓
+Loss
+    ↓
+loss.backward()
+    ↓
+Gradients
+
+But there's one missing step:
+What do we do with those gradients?
+That's the job of an optimizer.
+
+
+
+1. What is an optimizer?
+An optimizer is an algorithm that uses the gradients to update the model's parameters.
+The basic idea is:
+New Parameter=Old Parameter−Learning Rate×Gradient
+For a weight w:
+wnew​=w−η(∂w/∂L)
+
+where:
+
+w = parameter
+L = loss
+∂w/∂L= gradient
+η = learning rate
+This is gradient descent.​​
+
+
+2. Let's use our previous example
+We had: w=2
+and:∂w/∂L=−60
+Suppose:η=0.01
+Then:wnew=2−(0.01)(−60)=2+0.6
+wnew=2.6
+
+Old weight
+    2
+    ↓
+Gradient = -60
+    ↓
+Learning rate = 0.01
+    ↓
+New weight
+    2.6
+
+The weight moved in the direction that should reduce the loss.
+
+Gradient positive  → decrease parameter
+Gradient negative  → increase parameter
+
+That's exactly what we want because the gradient points in the direction of increasing loss.
+Gradient descent moves in the opposite direction.
+
+Suppose:∂w/∂L=+5
+Then:wnew=w−η(5)
+So w decreases.
+If instead:∂w/∂L=−5
+then:wnew=w−η(−5)
+so w increases.
+
+4. Why is it called "gradient descent"?
+Imagine the loss function as a landscape:
+Loss
+ ^
+ |             *
+ |           *   *
+ |         *       *
+ |       *           *
+ |     *               *
+ |   *                   *
+ |__*________________________> Weight
+
+We want to reach the bottom:
+minimum loss
+The gradient tells us the direction of steepest increase.
+So we move:opposite direction
+Hence:Gradient Descent
+
+5. Learning Rate
+The learning rate controls how big each step is.
+Suppose:
+gradient=−10  
+Learning rate = 0.1  Δw=1
+Learning rate = 0.01 Δw=0.1
+Learning rate = 0.001  Δw=0.01
+
+Large learning rate
+        ↓
+Large steps
+
+Small learning rate
+        ↓
+Small steps
+
+
+6. Learning rate too large
+Suppose the minimum is here:
+
+             minimum
+                ↓
+───────────────●───────────────
+With a sensible learning rate:
+● → ● → ● → ● → minimum
+But with a huge learning rate:
+● → → → ●
+       ↙
+   ● ← ← ← ●
+The model can overshoot the minimum repeatedly.
+It may oscillate or even diverge.
+
+
+7. Learning rate too small
+The opposite problem:
+● → . → . → . → . → . → minimum
+Training becomes extremely slow.
+So choosing a good learning rate is important.
+Typical starting values you will encounter:
+0.1
+0.01
+0.001
+0.0001
+For Adam, 0.001 is a very common starting point.
+
+8. Implement gradient descent manually
+Before using PyTorch's optimizer, let's understand it manually.
+
+import torch
+
+w = torch.tensor(2.0, requires_grad=True)
+
+x = torch.tensor(3.0)
+target = torch.tensor(20.0)
+
+learning_rate = 0.01
+
+for i in range(10):
+
+    prediction = w * x
+
+    loss = (prediction - target) ** 2
+
+    loss.backward()
+
+    with torch.no_grad():
+        w -= learning_rate * w.grad
+
+    w.grad.zero_()
+
+    print(
+        f"Step {i}: "
+        f"w={w.item():.4f}, "
+        f"loss={loss.item():.4f}"
+    )
+
+
+
+The important part is:
+with torch.no_grad():
+    w -= learning_rate * w.grad
+We're manually implementing:
+w←w−η∇wL
+
+
+9. Why torch.no_grad()?
+Remember that PyTorch normally tracks operations involving tensors with:
+requires_grad=True
+But when we're manually updating the parameter: w -= learning_rate * w.grad
+we don't want that update itself to become part of the computational graph.
+Therefore:with torch.no_grad():
+means:"Don't track these operations for gradient computation."
+
+
+10. Why do we need w.grad.zero_()?
+Remember our earlier experiment:
+PyTorch accumulates gradients.
+Suppose:
+Iteration 1:w.grad = -10
+Then the next backward:
+Iteration 2:w.grad = -8
+Without clearing:w.grad = -18
+which isn't what we want.
+So every training iteration begins by clearing the old gradients.
+
+In our manual implementation:
+w.grad.zero_()
+In real PyTorch code:
+optimizer.zero_grad()
+
+
+
+11. Now let's use PyTorch's optimizer
+Instead of manually doing:
+with torch.no_grad():
+    w -= learning_rate * w.grad
+
+we can create:
+optimizer = torch.optim.SGD(
+    [w],
+    lr=0.01
+)
+
+Then:
+optimizer.zero_grad()
+loss.backward()
+optimizer.step()
+That's much cleaner.
+
+12. The standard pattern
+You should memorize this structure, not blindly memorize the code:
+
+optimizer.zero_grad()
+prediction = model(X)
+loss = loss_fn(prediction, y)
+loss.backward()
+optimizer.step()
+
+1. Clear old gradients
+        ↓
+2. Forward pass
+        ↓
+3. Calculate loss
+        ↓
+4. Backpropagation
+        ↓
+5. Update parameters
+
+
+13. SGD
+The simplest optimizer is:Stochastic Gradient Descent (SGD)
+In PyTorch:
+
+optimizer = torch.optim.SGD(
+    model.parameters(),
+    lr=0.01
+)
+
+The basic update is:
+θ←θ−η∇θL
+where θ represents all the model parameters.
+
+
+14. Why "stochastic"?
+Suppose you have:
+1,000,000 training examples
+You could calculate the gradient using all one million examples.
+That's called batch gradient descent.
+But that's expensive.
+
+Instead, we can use a small batch:
+Batch 1 → 32 examples
+Batch 2 → 32 examples
+Batch 3 → 32 examples
+...
+
+Each batch gives us an estimate of the gradient.
+That's why it's called stochastic gradient descent.
+In modern deep learning, when people say "SGD," they often mean mini-batch SGD.
+
+
+15. Batch size
+Suppose your dataset contains: 10,000
+examples.
+If:batch_size = 100
+then one epoch requires:10000/100=100
+
+parameter-update steps.
+So:
+Epoch
+ ├── Batch 1 → backward → update
+ ├── Batch 2 → backward → update
+ ├── Batch 3 → backward → update
+ ...
+ └── Batch 100 → backward → update
+
+We'll use this heavily when we reach the training loop.
+
+
+16. SGD with momentum
+Plain SGD can sometimes bounce around.
+Imagine:
+       \       /
+        \     /
+         \   /
+          \ /
+           X
+          / \
+         /   \
+
+The optimizer may zigzag.
+Momentum helps it maintain some "velocity" from previous updates.
+Conceptuallyvt=βvt−1+gt
+then:θt=θt−1−ηvt
+You don't need to memorize the exact equations yet.
+Think:
+Momentum = remember previous update direction.
+
+optimizer = torch.optim.SGD(
+    model.parameters(),
+    lr=0.01,
+    momentum=0.9
+)
+
