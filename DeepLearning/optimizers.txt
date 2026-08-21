@@ -305,3 +305,162 @@ optimizer = torch.optim.SGD(
     momentum=0.9
 )
 
+17. Adam
+Now we reach the optimizer you'll encounter constantly.
+Adam = Adaptive Moment Estimation
+
+PyTorch:
+optimizer = torch.optim.Adam(
+    model.parameters(),
+    lr=0.001
+)
+
+Adam combines ideas related to:
+momentum
+adaptive learning rates
+
+It keeps running estimates related to the first and second moments of gradients.
+You don't need to derive Adam mathematically yet.
+The intuition is more important:
+
+SGD
+ ↓
+same learning rate for parameters
+
+Adam
+ ↓
+adapts updates based on gradient history
+
+18. SGD vs Adam
+A useful first comparison:
+
+|                     | SGD                | Adam               |
+| ------------------- | ------------------ | ------------------ |
+| Simplicity          | Very simple        | More sophisticated |
+| Momentum            | Optional           | Built in           |
+| Adaptive updates    | No                 | Yes                |
+| Typical starting LR | Often 0.01-ish     | Often 0.001        |
+| Ease of training    | Can require tuning | Usually easier     |
+| Common use          | Very common        | Extremely common   |
+
+For our first neural networks, we'll usually use:
+torch.optim.Adam(...)
+Then later you'll understand when SGD can actually be preferable.
+
+19. The most important mental model
+Don't think:
+"Adam magically makes the model learn."
+Instead think:
+
+Model
+  ↓
+Prediction
+  ↓
+Loss
+  ↓
+Backward()
+  ↓
+Gradients
+  ↓
+Optimizer
+  ↓
+Updated Parameters
+  ↓
+Repeat
+
+The optimizer doesn't calculate the gradients.
+Autograd does that.
+
+Autograd
+loss.backward()
+
+calculates:
+∇θL
+Optimizer
+optimizer.step()
+uses those gradients to update:
+θ
+This distinction is fundamental.
+
+
+
+import torch
+
+w = torch.tensor(2.0, requires_grad=True)
+
+x = torch.tensor([3.0])
+target = torch.tensor([20.0])
+
+optimizer = torch.optim.SGD(
+    [w],
+    lr=0.01
+)
+
+for epoch in range(10):
+
+    optimizer.zero_grad()
+
+    prediction = w * x
+
+    loss = (prediction - target) ** 2
+
+    loss.backward()
+
+    optimizer.step()
+
+    print(
+        f"Epoch {epoch + 1}: "
+        f"w={w.item():.4f}, "
+        f"loss={loss.item():.4f}"
+    )
+
+
+
+Notice the complete flow:
+
+optimizer.zero_grad()
+        ↓
+prediction
+        ↓
+loss
+        ↓
+loss.backward()
+        ↓
+gradients
+        ↓
+optimizer.step()
+        ↓
+new w
+
+That is essentially the skeleton of every neural-network training process.
+
+
+21. One subtle but VERY important point
+You might wonder:
+"Why don't we calculate the gradient after updating the weight?"
+Because the gradient tells us:
+Given the current parameters, which direction should I move to reduce the current loss?
+
+So the order is:
+
+Current parameters
+       ↓
+Calculate prediction
+       ↓
+Calculate loss
+       ↓
+Calculate gradient
+       ↓
+Update parameters
+       ↓
+New parameters
+       ↓
+Calculate new prediction
+
+Not:
+
+Update
+ ↓
+Calculate gradient
+
+
