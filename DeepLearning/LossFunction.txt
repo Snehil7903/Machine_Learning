@@ -1,0 +1,43 @@
+1. What is a loss function?
+A neural network produces a prediction: y^
+We know the actual answer:y
+The loss function measures how different the prediction is from the actual answer.
+L=Loss(y^,y)
+The optimizer then tries to minimize this loss.
+So our complete pipeline is:
+Input
+  ↓
+Neural Network
+  ↓
+Prediction ŷ
+  ↓
+Loss Function
+  ↓
+Loss
+  ↓
+backward()
+  ↓
+Gradients
+  ↓
+Optimizer
+  ↓
+Updated parameters
+The loss is therefore the signal that tells the network how badly it is performing.
+
+
+
+2. Loss vs Accuracy
+These are NOT the same thing.
+Suppose we're doing binary classification.
+Actual:y=1
+Prediction:y^=0.51
+The model gets the classification correct because:0.51>0.5
+So accuracy says:
+Correct ✅
+But another model might predict:
+y^=0.99
+
+Both are correct according to accuracy.
+But the second model is much more confident.
+A good loss function can distinguish these predictions.
+That's why during training we generally optimize loss, not accuracy.
