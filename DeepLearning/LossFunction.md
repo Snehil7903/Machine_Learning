@@ -41,3 +41,25 @@ Both are correct according to accuracy.
 But the second model is much more confident.
 A good loss function can distinguish these predictions.
 That's why during training we generally optimize loss, not accuracy.
+
+
+3. Regression Loss: MSE
+Let's start with the simplest one.
+Mean Squared Error
+![alt text](image.png)
+Suppose:
+Actual = 10
+Prediction = 7
+Error:10−7=3
+Squared error:3^2=9
+So:L=9
+
+import torch
+loss_fn = torch.nn.MSELoss()
+prediction = torch.tensor([7.0])
+target = torch.tensor([10.0])
+loss = loss_fn(prediction, target)
+print(loss)
+
+Output:
+tensor(9.)
