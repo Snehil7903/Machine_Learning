@@ -63,3 +63,30 @@ print(loss)
 
 Output:
 tensor(9.)
+
+
+4. Why square the error?
+Suppose we didn't square.
+If:error=+5
+and:error=−5
+
+they would cancel each other if averaged.
+But we want both to represent an error of magnitude 5.
+Squaring gives: (+5)^2=25 
+                (-5)^2=25 
+So errors cannot cancel.
+There is another important property:
+Large errors are penalized disproportionately.
+For example:2^2=4 
+but: 10^2=100 
+So MSE strongly penalizes large mistakes.
+
+
+
+5. MSE gradient
+For a single example:L=(y'-y)^2 
+Derivative with respect to prediction:​∂L/∂y'​=2(y'​−y)​
+This is important because that gradient eventually travels backward into the neural network.
+For example: y'=7,y=10
+Then:∂L/∂y'=2(7−10)=−6
+That negative gradient tells the network that its prediction needs to move upward.
