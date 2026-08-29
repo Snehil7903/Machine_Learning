@@ -90,3 +90,21 @@ This is important because that gradient eventually travels backward into the neu
 For example: y'=7,y=10
 Then:∂L/∂y'=2(7−10)=−6
 That negative gradient tells the network that its prediction needs to move upward.
+
+
+6. MAE
+Another regression loss is:
+Mean Absolute Error
+MAE = 1/n(summation|y-y'|)
+Example:
+y=10,y'=7
+Then:
+MAE=|10-7|=3
+PyTorch: loss_fn = torch.nn.L1Loss()
+
+|                     | MSE               | MAE          |          |   |
+| ------------------- | ----------------- | ------------ | -------- | - |
+| Formula             | \((y-\hat y)^2\)  | (            | y-\hat y | ) |
+| Large errors        | Penalized heavily | Less heavily |          |   |
+| Outlier sensitivity | High              | Lower        |          |   |
+| Typical use         | Regression        | Regression   |          |   |
