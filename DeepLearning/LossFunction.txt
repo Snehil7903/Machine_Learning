@@ -108,3 +108,14 @@ PyTorch: loss_fn = torch.nn.L1Loss()
 | Large errors        | Penalized heavily | Less heavily |          |   |
 | Outlier sensitivity | High              | Lower        |          |   |
 | Typical use         | Regression        | Regression   |          |   |
+
+
+7. Now classification gets interesting
+Suppose we're predicting whether an email is:
+Spam = 1
+Not Spam = 0
+The neural network might output:
+0.8 
+We interpret this as:
+80% probability of spam.
+This is where Binary Cross Entropy (BCE) comes in.
