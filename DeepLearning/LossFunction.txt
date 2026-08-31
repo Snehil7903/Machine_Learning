@@ -119,3 +119,18 @@ The neural network might output:
 We interpret this as:
 80% probability of spam.
 This is where Binary Cross Entropy (BCE) comes in.
+
+
+9. Understand BCE intuitively
+Suppose:y=1 
+The correct answer is 1.
+Model predicts 0.9
+Good prediction.
+Loss is small.
+Model predicts 0.6
+Still correct, but less confident.
+Loss is larger.
+Model predicts 0.01
+Terrible prediction.
+Loss becomes very large.
+So BCE strongly punishes being confidently wrong.
