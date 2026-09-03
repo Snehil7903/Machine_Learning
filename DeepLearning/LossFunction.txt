@@ -134,3 +134,12 @@ Model predicts 0.01
 Terrible prediction.
 Loss becomes very large.
 So BCE strongly punishes being confidently wrong.
+
+10. Why logarithm?
+Consider:y=1
+BCE becomes:L=-log(p) 
+Now:p=0.9
+gives a small loss.
+But:p=0.01
+gives a very large loss.
+This gives us exactly the behavior we want:
