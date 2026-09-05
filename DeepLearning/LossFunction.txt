@@ -143,3 +143,18 @@ gives a small loss.
 But:p=0.01
 gives a very large loss.
 This gives us exactly the behavior we want:
+
+
+11. Sigmoid
+For binary classification, we often start with a raw neural-network output called a logit.
+Suppose:z=2
+We convert it to a probability using sigmoid: sigma(z)=1/{1+e^{-z}}
+For (z=2), the probability is approximately:0.881
+For (z=-2):0.119
+
+So:
+logit
+  ↓
+sigmoid
+  ↓
+probability
