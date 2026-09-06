@@ -158,3 +158,24 @@ logit
 sigmoid
   ↓
 probability
+
+
+12. The PyTorch way
+You might think we'd write:
+probability = torch.sigmoid(logits)
+loss = torch.nn.BCELoss()(probability, target)
+That works.
+But PyTorch gives us a better and numerically more stable option:
+loss_fn = torch.nn.BCEWithLogitsLoss()
+Then:loss = loss_fn(logits, target)
+Notice:Don't apply sigmoid yourself.
+BCEWithLogitsLoss internally combines:Sigmoid+BCE
+in a numerically stable way.
+So for binary classification:
+Neural Network
+      ↓
+   logits
+      ↓
+BCEWithLogitsLoss
+      ↓
+    loss
